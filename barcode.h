@@ -1,24 +1,28 @@
-#ifndef H_ESCREVERNATELA_
-#define H_ESCREVERNATELA_
+#ifndef H_BARCODE
+#define H_BARCODE
 
 #include <string>
+#include "ui.h"
 
 #define INSERTCODE 1
-#define FILTERCODES 2
+#define SEARCHCODE 2
+#define LISTCODESDEST 3
+#define LISTCODESDESTPROD 4
+#define LISTSELLERS 5
 #define CLOSE -1
 
-struct _BarCode{
-    std::string code[5];
-};
-
-typedef struct _BarCode BarCode;
 
 BarCode GetInputCode();
-void PrintOptions();
 bool VerifyValidCode(BarCode input);
 bool IsInList(std::string triplet);
 void AddCodeToDataBase(BarCode inputCode);
-void PrintCodeData(BarCode inputCode);
-void TestPrint();
+void AddProductToSeller(std::string code);
+void AddNewSellerToDataBase(std::string code);
+void ListAllSellers();
+void ListCodesByDestinationAndProduct();
+void ListCodesByDestination();
+BarCode GetFilterCode();
+void SearchCode(BarCode filterCode);
+
 
 #endif

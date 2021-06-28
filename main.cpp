@@ -4,12 +4,13 @@
 #include <string>
 #include "barcode.h"
 
+
 using namespace std;
 
 
 int main() {
     int option = 0;
-    BarCode inputCode;
+    BarCode inputCode, filterCode;
 
     while(option != -1) {
         PrintOptions();
@@ -27,8 +28,22 @@ int main() {
                 }
                 break;
 
-            case FILTERCODES:
-                TestPrint();
+            case SEARCHCODE:
+                filterCode = GetFilterCode();
+                SearchCode(filterCode);
+                break;
+
+            case LISTCODESDEST:
+                ListCodesByDestination();
+                break;
+
+            case LISTCODESDESTPROD:
+                ListCodesByDestinationAndProduct();
+                break;
+
+            case LISTSELLERS:
+                cout << "Lista de vendedores e produtos enviados: \n";
+                ListAllSellers();
                 break;
 
             case CLOSE:

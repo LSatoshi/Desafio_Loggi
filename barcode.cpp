@@ -4,15 +4,14 @@
 #include <string>
 #include <string.h>
 #include <vector>
+#include <bits/stdc++.h>
 #include "barcode.h"
 
 using namespace std;
 
-vector<BarCode> dataBase;
+vector<BarCode> codeDataBase;
+vector<Seller> sellersDataBase;
 
-void PrintOptions() {
-    cout << "\nLeitor de codigo de barras\n Entre o comando desejado:\n  1 - Inserir novo codigo;\n  2 - Filtrar codigos;\n -1 - fechar programa.\n";
-}
 
 BarCode GetInputCode() {
     string input;
@@ -28,6 +27,7 @@ BarCode GetInputCode() {
     return barCode;
 }
 
+
 bool VerifyValidCode(BarCode input) {
     if(IsInList(input.code[0]) && IsInList(input.code[1]) && IsInList(input.code[4])) {
         //hardcoded barcode restrictions
@@ -38,6 +38,7 @@ bool VerifyValidCode(BarCode input) {
     return false;
 }
 
+
 bool IsInList(string triplet) {
     string list[5] = {"000", "111", "333", "555", "888"};
     for(int i = 0; i < 5; i++) {
@@ -46,41 +47,124 @@ bool IsInList(string triplet) {
     return false;
 }
 
+
 void AddCodeToDataBase(BarCode inputCode) {
-    dataBase.push_back(inputCode);
+    codeDataBase.push_back(inputCode);
+    AddProductToSeller(inputCode.code[3]);
     return;
 }
 
-string GetRegion(string triplet) {
-    if(triplet.compare("111") == 0) return("Centro-Oeste");
-    if(triplet.compare("333") == 0) return("Nordeste");
-    if(triplet.compare("555") == 0) return("Norte");
-    if(triplet.compare("888") == 0) return("Sudeste");
-    if(triplet.compare("000") == 0) return("Sul");
-    return("ERROR");
-}
-
-string GetProductType(string triplet) {
-    if(triplet.compare("111") == 0) return("Livros");
-    if(triplet.compare("333") == 0) return("Eletronicos");
-    if(triplet.compare("555") == 0) return("Bebidas");
-    if(triplet.compare("888") == 0) return("Brinquedos");
-    if(triplet.compare("000") == 0) return("Joias");
-    return("ERROR");
-}
-
-void PrintCodeData(BarCode bar) {
-    cout << "Codigo: ";
-    for(int i = 0; i < 5; i++) cout << bar.code[i] << " ";
-    cout << "\nRegiao de Origem: " << GetRegion(bar.code[0]) << endl;
-    cout << "Regiao de Destino: " << GetRegion(bar.code[1]) << endl;
-    cout << "Codigo Loggi: " << bar.code[2] << endl;
-    cout << "Codigo do vendedor do produto: " << bar.code[3] << endl;
-    cout << "Tipo do produto: " << GetProductType(bar.code[4]) << endl;
-}
-
-void TestPrint() {
-    for (BarCode barcode : dataBase) {
-        cout << barcode.code[0] << endl;
+void AddProductToSeller(string code) {
+    for(int i = 0; i < sellersDataBase.size(); i++) {
+        if(sellersDataBase[i].code.compare(code) == 0) {
+            sellersDataBase[i].sentPackages++;
+            return;
+        }
     }
+    AddNewSellerToDataBase(code);
+}
+
+void AddNewSellerToDataBase(string code) {
+    Seller seller;
+    seller.code = code;
+    seller.sentPackages = 1;
+    sellersDataBase.push_back(seller);
+}
+
+
+void ListAllSellers() {
+    for(Seller s : sellersDataBase) {
+        PrintSeller(s);
+    }
+}
+
+//Funcoes utilizadas para ordenacao do Vector
+bool CompareOrigin(BarCode code1, BarCode code2) {
+    return (code1.code[0].compare(code2.code[0]) < 0);
+}
+bool CompareDestination(BarCode code1, BarCode code2) {
+    return (code1.code[1].compare(code2.code[1]) < 0);
+}
+bool CompareProductType(BarCode code1, BarCode code2) {
+    return (code1.code[4].compare(code2.code[4]) < 0);
+}
+
+
+void ListCodesByDestination() {
+    sort(codeDataBase.begin(), codeDataBase.end(), CompareDestination);
+
+    string currDest;
+
+    currDest = codeDataBase[0].code[1];
+    cout << GetRegion(currDest) << "\n";
+
+    for(BarCode code : codeDataBase) {
+        if(currDest.compare(code.code[1]) != 0) {
+            currDest = code.code[1];
+            cout << GetRegion(currDest) << "\n";
+        }
+        PrintCodeData(code);
+    }
+}
+
+void ListCodesByDestinationAndProduct() {
+    sort(codeDataBase.begin(), codeDataBase.end(), CompareDestination);
+    sort(codeDataBase.begin(), codeDataBase.end(), CompareProductType);
+
+    string currDest, currProd;
+
+    currDest = codeDataBase[0].code[1];
+    currProd = codeDataBase[0].code[4];
+
+    cout << "\n" << GetRegion(currDest) << "\n";
+    cout << GetProductType(currProd) << "\n";
+
+    for(BarCode code : codeDataBase) {
+        if(currDest.compare(code.code[1]) != 0) {
+            currDest = code.code[1];
+            cout << "\n" << GetRegion(currDest) << "\n";
+            cout << GetProductType(currProd) << "\n";
+        }
+        if(currProd.compare(code.code[4]) != 0) {
+            currProd = code.code[4];
+            cout << "\n" << GetRegion(currDest) << "\n";
+            cout << GetProductType(currProd) << "\n";
+        }
+
+        PrintCodeData(code);
+    }
+}
+
+
+BarCode GetFilterCode() {
+    BarCode filterCode;
+    int option = 0;
+    for(int i = 0; i < 5; i++) filterCode.code[i] = "null";
+
+    while(option != -1) {
+        PrintfFilterOptions();
+        cin >> option;
+        if(option > -1 && option < 5) {
+            cout << "Insira o codigo:\n";
+            cin >> filterCode.code[option];
+        };
+    }
+    return filterCode;
+}
+
+void SearchCode(BarCode filterCode) {
+    int i;
+    for(BarCode code : codeDataBase) {
+        for(i = 0; i < 5; i++) {
+            //verifica se tem um filtro para comparar e se o codigo nao e igual
+            if(filterCode.code[i].compare("null") != 0 && filterCode.code[i].compare(code.code[i]) != 0) break;
+        }
+        //Caso termine o for completo, o codigo foi encontrado
+        if(i == 5) {
+            cout << "Codigo encontrado:\n";
+            PrintCodeData(code);
+            return;
+        }
+    }
+    cout << "Codigo nao encontrado:\n";
 }
